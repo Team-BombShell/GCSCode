@@ -1,6 +1,24 @@
 from serial.serialutil import SerialException
+import serial
+
+import warnings
 
 from xbee import XBee               #Xbee module
+
+class Comms:
+    def __init__(self,ser_path):
+        try:
+            #Initialize the Serial port for reading from the XBEE Module
+            ser = serial.Serial(ser_path)
+
+            #Initialize the XBEE device using a callback
+            #   The callback allows the XBEE to operate Asynchronously
+            xbee = XBee(ser, callback=read_data)
+        except SerialException:
+            warnings.warn("COM port cannot be found. No data will be read. Try "
+                          +"reconnecting the xbee.")
+        
+
 
 def read_data(data):
     '''

@@ -62,6 +62,7 @@ from serial.serialutil import SerialException
 
 
 import dataPlotter
+from comms import Comms
 
 # Verdana is good font
 LARGE_FONT = ("Verdana",12)
@@ -170,19 +171,8 @@ def init():
     root = Tk()
     root.geometry('1024x720+350+200')
     app = Window()
-
-    try:
-        #Initialize the Serial port for reading from the XBEE Module
-        ser = serial.Serial('COM1')
-
-        #Initialize the XBEE device using a callback
-        #   The callback allows the XBEE to operate Asynchronously
-        xbee = XBee(ser, callback=read_data)
-    except SerialException:
-        warnings.warn("COM port cannot be found. No data will be read. Try "
-                      +"reconnecting the xbee.")
-        
-
+    xbee = Comms('COM1')
+    
 def halt():
     '''
     This method stops execution of the program and safely
