@@ -49,7 +49,7 @@ NOTE: The XBee MUST have API mode activated through the XCTU app before this pro
 
 
 import tkinter as tk                #GUI Modules
-from tkinter import Tk, BOTH,BOTTOM,TOP
+from tkinter import Tk, BOTH,BOTTOM,TOP,RIGHT,LEFT
 from tkinter.ttk import Frame,Button,Label
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
@@ -61,7 +61,7 @@ from serial.serialutil import SerialException
 
 
 
-import dataPlotter
+import customWidgets
 from comms import Comms
 
 # Verdana is good font
@@ -98,24 +98,29 @@ class Window(Frame):
     def __init__(self):
         super().__init__()
         self.initUI()
+        self.width = self.winfo_reqwidth()
+        self.height = self.winfo_reqheight()
 
     def initUI(self):
         self.master.title('BombShell Ground Station Terminal v0.0001')  #Window Title
-        self.grid()                                                     #Inits Grid Formatting
-
-        self.createGraphs()
+        #self.grid()                                                     #Inits Grid Formatting
+        self.createGraphs()                                             
         self.createSideBar()
         self.createFooter()
         self.update()
+        self.bind('<Configure>',self.on_resize)
 
     
     def createGraphs(self):
-        self.plots = dataPlotter.Plotting_Widget()
+        self.plots = customWidgets.Plotting_Widget()
 
         canvas = FigureCanvasTkAgg(self.plots.f,self)
         canvas.show()
-        canvas.get_tk_widget().grid(column=0,columnspan=3,row=1)
-        canvas._tkcanvas.grid(column=0,row=1)
+        #canvas.get_tk_widget().grid(column=0,columnspan=3,row=1)
+        canvas.get_tk_widget().pack()
+        #canvas._tkcanvas.grid(column=0,row=1)
+        
+        self.canvas=canvas
 
     def createSideBar(self):
         load = Image.open('bombshell1.png').resize((210,210))
@@ -124,22 +129,24 @@ class Window(Frame):
     
 
         self.side_bar = Label(self,image=render,text=' ',compound=tk.BOTTOM,
-                              font=LARGE_FONT,anchor=tk.NW,justify=tk.RIGHT,width=50,relief=tk.RIDGE)
+                              font=LARGE_FONT,anchor=tk.NE,justify=tk.RIGHT,width=50,relief=tk.RIDGE)
         self.side_bar.image=render
-        self.side_bar.grid(column=3,row=1)
+        #self.side_bar.grid(column=3,row=1)
+        #self.side_bar.pack(side=RIGHT,fill=BOTH,expand=1)
 
 
     def createFooter(self):
-        self.footer = Label(self,text=' ',font=LARGE_FONT,anchor=tk.SW,
-                            justify=tk.LEFT,relief=tk.RIDGE,width=130)
-        self.footer.grid(column = 0,row = 3,columnspan=5)
+        self.footer = Label(self,text=' ',font=LARGE_FONT,anchor=tk.SE,
+                            justify=tk.LEFT,relief=tk.RIDGE)
+        #self.footer.grid(column = 0,row = 3,columnspan=5)
+        #self.footer.pack(side=BOTTOM,expand=0)
         
         
         
     def update(self):
         
 
-        self.plots.update(GPSTime,altitude,pressure,temp,tiltZ)
+        self.plots.update(GPSTime,altitude,pressure,temp,tiltZ) #
         
         
         sidebar_text = "Mission Time: " + str(GPSTime[-1]) +\
@@ -158,8 +165,40 @@ class Window(Frame):
         self.side_bar['text'] = sidebar_text
         self.footer['text'] = footer_text
 
+           
+        self.pack(side=TOP,fill=BOTH,expand=1)      #basically just to initialize the Frames window manager.
+        self.update_idletasks()                     #Forces the Frame to update it's geometry
+                                                    #(usually it handles all events and goes back to update static stuff.)
 
 
+        ###This originally used .pack(), but .pack() does weird things sometimes.
+        ### .pack() should onnly be used to ensure the outer-frame is ready to be drawn to
+        self.footer.place(y=self.winfo_height(),x=0,anchor=tk.SW)    #Places the bottom of the footer at the bottom-left of the screen
+        self.side_bar.place(x=self.winfo_width(),y=0,anchor=tk.NE)   #Places the the sidebar in the top-right corner of the scren
+        self.canvas._tkcanvas.place(x=0,y=0)                         #Places graphs in top left
+
+        
+        
+        
+       
+        
+
+
+
+    def on_resize(self,event):
+        wscale = float(event.width)/self.width
+        hscale = float(event.height)/self.height
+        self.width = event.width
+        self.height = event.height
+
+        self.update()
+
+        self.config(width = self.width,height=self.height)
+        #self.scale('all',0,0,wscale,hscale)
+        #self.footer.pack(side=BOTTOM,fill=BOTH,expand=1)
+        #self.side_bar.pack(side=RIGHT,fill=BOTH,expand=1)
+        
+        
 
     
 def init():
@@ -169,7 +208,7 @@ def init():
     '''
     global ser,xbee,root,app
     root = Tk()
-    root.geometry('1024x720+350+200')
+    root.geometry('1366x768+350+200')
     app = Window()
     xbee = Comms('COM1')
     
@@ -179,7 +218,7 @@ def halt():
     terminates all of its processes.
     '''
     xbee.halt()
-    ser.close()
+    
 
 
 
@@ -191,7 +230,7 @@ if __name__ == '__main__':
     
     init()              #Initialize the things
 
-    root.mainloop()     #Starts looping the window loop
+    app.mainloop()     #Starts looping the window loop
     
     halt()              #Stops execution safely
     

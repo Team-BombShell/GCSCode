@@ -11,6 +11,8 @@ class Plotting_Widget:
         self.temp_plot=f.add_subplot(223)
         self.tiltZ_plot=f.add_subplot(224)
 
+
+
         self.altitude_plot.set_title('Altitude')
         self.altitude_plot.set_xlabel('Time (s)')
         self.altitude_plot.set_ylabel('meters')
@@ -36,4 +38,7 @@ class Plotting_Widget:
         self.temp_plot.plot(GPSTime,temp)
         self.tiltZ_plot.plot(GPSTime,tiltZ)
 
+
+
+        
 
