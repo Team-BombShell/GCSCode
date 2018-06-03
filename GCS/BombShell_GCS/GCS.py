@@ -58,13 +58,14 @@ from matplotlib import style
 
 from PIL import Image, ImageTk
 
-import sys,serial,time,warnings     #System tools
+import sys,serial,time,warnings,csv     #System tools
 
 
 
 #Our modules
-import customWidgets  #
+import customWidgets  
 from comms import Comms
+from storage import SaveFile
 
 # Verdana is good font
 LARGE_FONT = ("Verdana",12)
@@ -92,9 +93,14 @@ GPSAlt = [0]
 GPSSats = [0]
 packetReceivedRate = [0]
 packetsDropped = [0]
-data = [missionTime, packetCount,altitude,pressure,temp,voltage,GPSTime,GPSLat,GPSLong,GPSAlt,GPSSats,tiltX,tiltY,tiltZ,softwareState]
+
+
+data = [missionTime, packetCount,altitude,pressure,
+        temp,voltage,GPSTime,GPSLat,GPSLong,GPSAlt,
+        GPSSats,tiltX,tiltY,tiltZ,softwareState]
 #
 ###
+
 
 
 
@@ -181,6 +187,21 @@ class Window(Frame):
         self.side_bar.place(x=self.winfo_width(),y=0,anchor=tk.NE)   #Places the the sidebar in the top-right corner of the scren
         self.canvas._tkcanvas.place(x=0,y=0)                         #Places graphs in top left
 
+
+        self.save(data)
+
+    def save(self,data):
+        with open('telemetry.csv','a',newline='') as save_file:
+            saver= csv.writer(save_file, delimiter=",",
+                              quotechar='|', quoting=csv.QUOTE_NONE)
+
+            for i in range(len(data[0])):
+                row = []
+                for el in data:
+                    row.append(el[-1])
+
+                saver.writerow(row)        
+
         
         
         
@@ -208,12 +229,21 @@ def init():
     This method initializes the program and all of its instance
     variables.
     '''
-    global ser,xbee,root,app,missionTime
+    global ser,xbee,root,app
     root = Tk()
     root.geometry('1366x768+350+200')
     app = Window()
     xbee = Comms('COM5',data)
-    print(missionTime)
+
+    with open('telemetry.csv','w',newline='') as save_file:
+            saver= csv.writer(save_file, delimiter=",",
+                              quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            row = ['missionTime', 'packetCount','altitude','pressure',
+                   'temp','voltage','GPSTime','GPSLat','GPSLong','GPSAlt',
+                   'GPSSats','tiltX','tiltY','tiltZ','softwareState']
+            saver.writerow(row)
+
+    
     
 def halt():
     '''
