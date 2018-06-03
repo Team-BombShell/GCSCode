@@ -59,11 +59,11 @@ from matplotlib import style
 from PIL import Image, ImageTk
 
 import sys,serial,time,warnings     #System tools
-from serial.serialutil import SerialException
 
 
 
-import customWidgets
+#Our modules
+import customWidgets  #
 from comms import Comms
 
 # Verdana is good font
@@ -74,6 +74,7 @@ style.use('ggplot')
 
 ###
 # Lists to hold Data
+missionTime = [0]
 softwareState = [0]
 tiltX = [0]
 tiltY = [0]
@@ -87,9 +88,11 @@ packetCount = [0]
 GPSTime = [0]
 GPSLat = [0]
 GPSLong = [0]
+GPSAlt = [0]
 GPSSats = [0]
 packetReceivedRate = [0]
 packetsDropped = [0]
+data = [missionTime, packetCount,altitude,pressure,temp,voltage,GPSTime,GPSLat,GPSLong,GPSAlt,GPSSats,tiltX,tiltY,tiltZ,softwareState]
 #
 ###
 
@@ -205,11 +208,12 @@ def init():
     This method initializes the program and all of its instance
     variables.
     '''
-    global ser,xbee,root,app
+    global ser,xbee,root,app,missionTime
     root = Tk()
     root.geometry('1366x768+350+200')
     app = Window()
-    xbee = Comms('COM5')
+    xbee = Comms('COM5',data)
+    print(missionTime)
     
 def halt():
     '''
