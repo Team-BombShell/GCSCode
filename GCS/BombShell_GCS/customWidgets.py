@@ -12,6 +12,28 @@ class Plotting_Widget:
         self.tiltZ_plot=f.add_subplot(224)
 
 
+        self.plots = [self.altitude_plot,self.pressure_plot,
+                 self.temp_plot,self.tiltZ_plot]
+
+        self.clear_and_label_plots()
+        
+        self.f = f
+
+    def update(self,GPSTime, altitude,pressure,temp,tiltZ):
+       
+
+        self.clear_and_label_plots()
+        
+        self.altitude_plot.plot(GPSTime,altitude)
+        self.pressure_plot.plot(GPSTime,pressure)
+        self.temp_plot.plot(GPSTime,temp)
+        self.tiltZ_plot.plot(GPSTime,tiltZ)
+        
+
+    def clear_and_label_plots(self):
+        for plot in self.plots:
+            plot.clear()
+        
 
         self.altitude_plot.set_title('Altitude')
         self.altitude_plot.set_xlabel('Time (s)')
@@ -28,17 +50,3 @@ class Plotting_Widget:
         self.tiltZ_plot.set_title('Tilt from Vertical')
         self.tiltZ_plot.set_xlabel('Time (s)')
         self.tiltZ_plot.set_ylabel('Degrees from Z axis')
-
-
-        self.f = f
-
-    def update(self,GPSTime, altitude,pressure,temp,tiltZ):
-        self.altitude_plot.plot(GPSTime,altitude)
-        self.pressure_plot.plot(GPSTime,pressure)
-        self.temp_plot.plot(GPSTime,temp)
-        self.tiltZ_plot.plot(GPSTime,tiltZ)
-
-
-
-        
-

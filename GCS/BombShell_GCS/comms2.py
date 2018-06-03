@@ -5,8 +5,8 @@ import warnings
 from digi.xbee.devices import XBeeDevice
 
 class Comms:
-    def __init__(self,ser_path,baud_rate=9600):
-        device = XBeeDevice(ser_path,baud_rate)
+    def __init__(self,ser_path,baud_rate):
+        self.device = XBeeDevice(ser_path,baud_rate)
 
         try:
             device.open()
@@ -21,7 +21,7 @@ class Comms:
 
                 print(data)
 
-            device.add_data_received_callback(data_received)
+            device.add_data_received_callback(data_recieved)
 
         finally:
             if device is not None and device.is_open():
