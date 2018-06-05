@@ -68,3 +68,11 @@ class Plotting_Widget:
         self.tiltZ_plot.set_title('Tilt from Vertical')
         self.tiltZ_plot.set_xlabel('Time (s)')
         self.tiltZ_plot.set_ylabel('Degrees from Z axis')
+
+
+
+'''This widget will contain all the buttons and stuff for the overrides'''
+class override_widget:
+    def __init__(self):
+        pass
+        

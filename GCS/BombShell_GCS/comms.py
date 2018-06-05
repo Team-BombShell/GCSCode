@@ -6,11 +6,13 @@ from digi.xbee.devices import XBeeDevice
 
 class Comms:
     def __init__(self,ser_path,data,baud_rate=9600):
-        device = XBeeDevice(ser_path,baud_rate)
+        self.device = XBeeDevice(ser_path,baud_rate)
+        
+       
         
         
         try:
-            device.open()
+            self.device.open()
 
             def data_received(xbee_message):
 
@@ -21,7 +23,7 @@ class Comms:
                 for i in range(len(data_in)):
                     data[i].append(data_in[i])
                
-            device.add_data_received_callback(data_received)
+            self.device.add_data_received_callback(data_received)
             
         except SerialException:
             warnings.warn("COM port cannot be found. No data will be read. Try "
@@ -30,9 +32,18 @@ class Comms:
 
             
         finally:
-            if device is not None and device.is_open():
-                device.close()
+            if self.device is not None and self.device.is_open():
+                self.device.close()
+         
                 
-        
+    def tx(self,data):
+        try:
+            self.device.open()
+            self.device.send_data_broadcast(data)
+        except SerialException:
+            pass
+        finally:
+            if self.device is not None and self.device.is_open():
+                self.device.close()
 
         
