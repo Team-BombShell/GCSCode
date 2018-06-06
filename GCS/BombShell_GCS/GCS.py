@@ -142,6 +142,10 @@ class Window(Frame):
         render = ImageTk.PhotoImage(load)
 
         O_RESET = Button(self,text='*RESET MCU*', command=ResetCallback)
+        O_FS0 = Button(self,text='Set Flight State 0',command=FS0Callback)
+        O_FS1 = Button(self,text='Set Flight State 1',command=FS1Callback)
+        O_FS2 = Button(self,text='Set Flight State 2',command=FS2Callback)
+        O_FS3 = Button(self,text='Set Flight State 3',command=FS3Callback)
         O_DepHS = Button(self,text='Deploy Heatshield', command=DepHSCallback)
         O_DetHS = Button(self,text='Detatch Heatshield', command=DetHSCallback)
         O_DepParachute= Button(self,text='Deploy Parachute', command=DepParachuteCallback)
@@ -149,7 +153,7 @@ class Window(Frame):
         O_BuzzOff = Button(self,text='Buzzer OFF',command=BuzzOff)
         O_CameraOn = Button(self,text='Camera Record',command=CameraOn)
         
-        self.overrideButtons = [O_RESET,O_DepHS,O_DetHS,O_DepParachute,O_BuzzOn,O_BuzzOff,O_CameraOn]
+        self.overrideButtons = [O_RESET,O_FS0,O_FS1,O_FS2,O_FS3,O_DepHS,O_DetHS,O_DepParachute,O_BuzzOn,O_BuzzOff,O_CameraOn]
         
         
         
@@ -271,12 +275,23 @@ def halt():
     This method stops execution of the program and safely
     terminates all of its processes.
     '''
-    
+
 
     
 def ResetCallback():
     xbee.tx('!')
 
+def FS0Callback():
+    xbee.tx('@')
+
+def FS1Callback():
+    xbee.tx('#')
+
+def FS2Callback():
+    xbee.tx('$')
+
+def FS3Callback():
+    xbee.tx('%')
 def DepHSCallback():
     xbee.tx('^')
 def DetHSCallback():
