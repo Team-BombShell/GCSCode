@@ -34,7 +34,7 @@ class Plotting_Widget:
        
         
         self.clear_and_label_plots()
-        print(data[7])
+        #print(data[7])
         #Plots time vs. each peice of data
         self.altitude_plot.plot(data[7],data[3])
         self.pressure_plot.plot(data[7],data[4])

@@ -1,56 +1,53 @@
 from serial.serialutil import SerialException
 import serial
+import threading
 
-import warnings
-from digi.xbee.devices import XBeeDevice
+
 
 class Comms:
     def __init__(self,ser_path,data,baud_rate=9600):
-        self.device = XBeeDevice(ser_path,baud_rate)
-        self.data = data
+        
         try:
-           self.device.open()
+            connected=False
+            self.temp_data_array = ''
+            self.data = data
+            self.ser = serial.Serial(
+                port=ser_path,\
+                baudrate=baud_rate,\
+                parity=serial.PARITY_NONE,\
+                stopbits=serial.STOPBITS_ONE,\
+                bytesize=serial.EIGHTBITS,\
+                timeout=0)
+            def receive_data(data):
+                if(len(data) >0):
+                    if(not data == '~'):
+                        self.temp_data_array += data
+                    else:
+                        self.temp_data_array = self.temp_data_array.split(',')
+                        for i in range(len(self.temp_data_array)):
+                            self.data[i].append(self.temp_data_array[i])
+                            self.temp_data_array = ''
+                       #print(self.data)
+
+            def read_from_port(serial,connected):
+                while not connected:
+                    connected = True
+
+                    while True:
+                        
+                        reading = serial.read().decode()
+                        receive_data(reading)
+            thread = threading.Thread(target=read_from_port,args=(self.ser,connected))
+            thread.start()
         except SerialException:
             warnings.warn("COM port cannot be found. No data will be read. Try "
                           +"reconnecting the xbee then entering the port.")
             #TODO: Add a GUI feature that allows you to quickly change the port
+ 
 
-        
-        
-
-    #def rx(self,data):
-        try:
             
-            
-            def data_received(xbee_message):
-
-                #received_addr = xbee_message.remote_device.get_64bit_addr()
-                received_addr = '0013A200410711D9'
-                print(received_addr)   
-                data_in = xbee_message.data.decode()
-                data_in = data_in.split(',')
-                for i in range(len(data_in)):
-                    self.data[i].append(float(data_in[i]))
-    
-                print(self.data)
-               
-            self.device.add_data_received_callback(data_received)
-            print("hello\n")
-        
-            
-        finally:
-            if self.device is not None and self.device.is_open():
-                pass
-         
 
     def tx(self,data):
-        try:
-            
-            self.device.send_data_broadcast(data)
-        except SerialException:
-            pass
-        finally:
-            if self.device is not None and self.device.is_open():
-                pass
+        self.ser.write(data.encode())
     def halt(self):
-        self.device.close()
+        self.ser.close()

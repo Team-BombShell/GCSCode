@@ -175,7 +175,7 @@ class Window(Frame):
        # xbee.rx(data)
         
         self.plots.update(data) #Calls the custom plots widget to update itself and redraw the plots
-        print("all clear")
+        #print("all clear")
         
         sidebar_text = "Mission Time: " + str(GPSTime[-1]) +\
                        "\nFlight State: " + str(softwareState[-1]) +\
@@ -218,7 +218,7 @@ class Window(Frame):
 
     def save(self,data):
         global save_file
-        print(save_file)
+       # print(save_file)
         saver= csv.writer(save_file, delimiter=",",
                           quotechar='|', quoting=csv.QUOTE_NONE,escapechar='\\')
 
@@ -257,7 +257,7 @@ def init():
     variables.
     '''
     global ser,xbee,root,app,save_file
-    xbee = Comms('COM3',data)
+    xbee = Comms('COM5',data)
 
     try:
         save_file = open('telemetry.csv','w',newline='')
@@ -286,7 +286,7 @@ def halt():
     terminates all of its processes.
     '''
     global save_file
-    xbee.halt()
+    #xbee.halt()
     save_file.close()
 
     
