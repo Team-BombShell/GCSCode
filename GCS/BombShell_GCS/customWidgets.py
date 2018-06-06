@@ -30,16 +30,16 @@ class Plotting_Widget:
     '''
     Clears the plots then plots the updated data received from the probe
     '''
-    def update(self,GPSTime, altitude,pressure,temp,tiltZ):
+    def update(self,data):
        
         
         self.clear_and_label_plots()
-
+        print(data[7])
         #Plots time vs. each peice of data
-        self.altitude_plot.plot(GPSTime,altitude)
-        self.pressure_plot.plot(GPSTime,pressure)
-        self.temp_plot.plot(GPSTime,temp)
-        self.tiltZ_plot.plot(GPSTime,tiltZ)
+        self.altitude_plot.plot(data[7],data[3])
+        self.pressure_plot.plot(data[7],data[4])
+        self.temp_plot.plot(data[7],data[5])
+        self.tiltZ_plot.plot(data[7],data[14])
         
 
 

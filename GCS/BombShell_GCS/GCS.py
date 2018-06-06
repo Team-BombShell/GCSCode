@@ -94,6 +94,7 @@ GPSSats = [0]
 packetReceivedRate = [0]
 packetsDropped = [0]
 
+save_file=None
 
 data = [missionTime, packetCount,altitude,pressure,
         temp,voltage,GPSTime,GPSLat,GPSLong,GPSAlt,
@@ -133,9 +134,9 @@ class Window(Frame):
        
         canvas.get_tk_widget().pack()
        
-        
-        self.anim = animation.FuncAnimation(self.plots.f, self.update,interval=1000)
         self.canvas=canvas
+        self.anim = animation.FuncAnimation(self.plots.f, self.update,interval=2000)
+        
 
     def createSideBar(self):
         load = Image.open('bombshell1.png').resize((210,210))
@@ -171,10 +172,10 @@ class Window(Frame):
         
         
     def update(self,i=None):
+       # xbee.rx(data)
         
-
-        self.plots.update(GPSTime,altitude,pressure,temp,tiltZ) #Calls the custom plots widget to update itself and redraw the plots
-        
+        self.plots.update(data) #Calls the custom plots widget to update itself and redraw the plots
+        print("all clear")
         
         sidebar_text = "Mission Time: " + str(GPSTime[-1]) +\
                        "\nFlight State: " + str(softwareState[-1]) +\
@@ -216,16 +217,17 @@ class Window(Frame):
         self.save(data)
 
     def save(self,data):
-        with open('telemetry.csv','a',newline='') as save_file:
-            saver= csv.writer(save_file, delimiter=",",
-                              quotechar='|', quoting=csv.QUOTE_NONE)
+        global save_file
+        print(save_file)
+        saver= csv.writer(save_file, delimiter=",",
+                          quotechar='|', quoting=csv.QUOTE_NONE,escapechar='\\')
 
-            for i in range(len(data[0])):
-                row = []
-                for el in data:
-                    row.append(el[-1])
+        for i in range(len(data[0])):
+            row = []
+            for el in data:
+                row.append(el[-1])
 
-                saver.writerow(row)        
+            saver.writerow(row)        
 
         
         
@@ -254,20 +256,28 @@ def init():
     This method initializes the program and all of its instance
     variables.
     '''
-    global ser,xbee,root,app
+    global ser,xbee,root,app,save_file
+    xbee = Comms('COM3',data)
+
+    try:
+        save_file = open('telemetry.csv','w',newline='')
+        saver= csv.writer(save_file, delimiter=",",
+                          quotechar='|', quoting=csv.QUOTE_MINIMAL,escapechar='\\')
+        row = ['missionTime', 'packetCount','altitude','pressure',
+               'temp','voltage','GPSTime','GPSLat','GPSLong','GPSAlt',
+               'GPSSats','tiltX','tiltY','tiltZ','softwareState']
+        saver.writerow(row)
+        save_file.close()
+        save_file = open('telemetry.csv','a',newline='')
+    except Exception:
+        print('file error')
+    
     root = Tk()
     root.geometry('1366x768+350+200')
     app = Window()
-    xbee = Comms('COM5',data)
+    
 
-    with open('telemetry.csv','w',newline='') as save_file:
-            saver= csv.writer(save_file, delimiter=",",
-                              quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            row = ['missionTime', 'packetCount','altitude','pressure',
-                   'temp','voltage','GPSTime','GPSLat','GPSLong','GPSAlt',
-                   'GPSSats','tiltX','tiltY','tiltZ','softwareState']
-            saver.writerow(row)
-
+    
     
     
 def halt():
@@ -275,7 +285,9 @@ def halt():
     This method stops execution of the program and safely
     terminates all of its processes.
     '''
-
+    global save_file
+    xbee.halt()
+    save_file.close()
 
     
 def ResetCallback():
