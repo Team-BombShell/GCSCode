@@ -36,10 +36,10 @@ class Plotting_Widget:
         self.clear_and_label_plots()
         #print(data[7])
         #Plots time vs. each peice of data
-        self.altitude_plot.plot(data[7],data[3])
-        self.pressure_plot.plot(data[7],data[4])
-        self.temp_plot.plot(data[7],data[5])
-        self.tiltZ_plot.plot(data[7],data[14])
+        self.altitude_plot.plot(data[1],data[3])
+        self.pressure_plot.plot(data[1],data[4])
+        self.temp_plot.plot(data[1],data[5])
+        self.tiltZ_plot.plot(data[1],data[14])
         
 
 
@@ -59,7 +59,8 @@ class Plotting_Widget:
 
         self.pressure_plot.set_title('Pressure')
         self.pressure_plot.set_xlabel('Time (s)')
-        self.pressure_plot.set_ylabel('KPa')
+        self.pressure_plot.set_ylabel('Pa')
+       # self.pressure_plot.set_squeeze(True)
 
         self.temp_plot.set_title('Temperature')
         self.temp_plot.set_xlabel('Time (s)')
@@ -98,10 +99,10 @@ class Plotting_Widget_2:
         self.clear_and_label_plots()
         #print(data[7])
         #Plots time vs. each peice of data
-        self.voltage_plot.plot(data[7],data[6])
-        self.GPS_plot.plot(data[7],data[10])
-        self.tiltx_plot.plot(data[7],data[12])
-        self.state_plot.plot(data[7],data[15])
+        self.voltage_plot.plot(data[1],data[6])
+        self.GPS_plot.plot(data[1],data[10])
+        self.tiltx_plot.plot(data[1],data[12])
+        self.state_plot.plot(data[1],data[15])
         
 
 

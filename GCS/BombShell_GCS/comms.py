@@ -31,7 +31,7 @@ class Comms:
                             self.data[i].append(self.temp_data_array[i])
                         self.temp_data_array = ''
                         self.connected = False
-                        print(self.data)
+                       # print(self.data)
 
             def read_from_port(serial,connected):
                 while True:
@@ -50,7 +50,7 @@ class Comms:
                     
 
                     if self.connected:
-                        print(reading)
+                       # print(reading)
                         receive_data(reading)
                     
                           
