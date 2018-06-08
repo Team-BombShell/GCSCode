@@ -106,6 +106,8 @@ save_file=None
 data = [teamID,missionTime, packetCount,altitude,pressure,
         temp,voltage,GPSTime,GPSLat,GPSLong,GPSAlt,
         GPSSats,tiltX,tiltY,tiltZ,softwareState]
+
+raw_data = []
 #
 ###
 
@@ -134,7 +136,7 @@ class Window(Frame):
         self.createSideBar()        #Creates a permanent side-bar to display some data
         self.createFooter()         #Same but for a footer
         self.update()               
-        self.bind('<Configure>',self.on_resize) #This adds an interrupt to react to resizing
+       
 
 
     #Creates all graphs within a Notebook context  
@@ -260,6 +262,7 @@ class Window(Frame):
        # print(save_file)
         saver= csv.writer(save_file, delimiter=",",
                           quotechar='|', quoting=csv.QUOTE_NONE,escapechar='\\')
+        
 
         for i in range(len(data[0])):
             row = []
@@ -276,15 +279,7 @@ class Window(Frame):
 
 
 
-    def on_resize(self,event):
-        wscale = float(event.width)/self.width
-        hscale = float(event.height)/self.height
-        self.width = event.width
-        self.height = event.height
-
-        self.update()
-
-        self.config(width = self.width,height=self.height)
+    
 
         
         
@@ -296,10 +291,11 @@ def init():
     variables.
     '''
     global ser,xbee,root,app,save_file
-    xbee = Comms('COM3',data)
+    xbee = Comms('COM5',data,raw_data)
 
     try:
         save_file = open('telemetry.csv','w',newline='')
+        
         saver= csv.writer(save_file, delimiter=",",
                           quotechar='|', quoting=csv.QUOTE_MINIMAL,escapechar='\\')
         row = ['missionTime', 'packetCount','altitude','pressure',
@@ -326,35 +322,47 @@ def halt():
     '''
     global save_file
     #xbee.halt()
+    xbee.halt()
     save_file.close()
 
     
 def ResetCallback():
     xbee.tx('!')
+    print('!')
 
 def FS0Callback():
     xbee.tx('@')
+    print('!')
 
 def FS1Callback():
     xbee.tx('#')
+    print('!')
 
 def FS2Callback():
     xbee.tx('$')
+    print('!')
 
 def FS3Callback():
     xbee.tx('%')
+    print('!')
 def DepHSCallback():
     xbee.tx('^')
+    print('!')
 def DetHSCallback():
     xbee.tx('*')
+    print('!')
 def DepParachuteCallback():
     xbee.tx('&')
+    print('!')
 def BuzzOn():
     xbee.tx('(')
+    print('!')
 def BuzzOff():
     xbee.tx(')')
+    print('!')
 def CameraOn():
     xbee.tx('_')
+    print('!')
 
 '''
 When this program is executed
