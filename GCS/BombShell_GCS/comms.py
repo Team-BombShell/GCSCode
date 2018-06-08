@@ -1,7 +1,7 @@
 from serial.serialutil import SerialException
 import serial
 import threading
-
+import warnings
 
 
 class Comms:
@@ -27,7 +27,7 @@ class Comms:
                         for i in range(len(self.temp_data_array)):
                             self.data[i].append(self.temp_data_array[i])
                             self.temp_data_array = ''
-                       #print(self.data)
+                            print(self.data)
 
             def read_from_port(serial,connected):
                 while not connected:

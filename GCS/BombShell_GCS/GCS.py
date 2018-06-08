@@ -6,7 +6,7 @@
 ~Team BombShell Ground Control System~
     ~~CanSat Competition 2018~~
 
-        Last_Edit: 1/21/2018
+        Created: 1/21/2018
         Version: 0.001
 ======================================
 Authors:
@@ -48,9 +48,12 @@ NOTE: The XBee MUST have API mode activated through the XCTU app before this pro
 '''
 
 
+
+''''''
+######
 import tkinter as tk                #GUI Modules
 from tkinter import Tk, BOTH,BOTTOM,TOP,RIGHT,LEFT
-from tkinter.ttk import Frame,Button,Label,Menubutton
+from tkinter.ttk import Frame,Button,Label,Menubutton,Notebook
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 import matplotlib.animation as animation
@@ -59,19 +62,23 @@ from matplotlib import style
 from PIL import Image, ImageTk
 
 import sys,serial,time,warnings,csv     #System tools
+######
+''''''
 
 
 
-#Our modules
+###Our modules###
 import customWidgets  
 from comms import Comms
 from storage import SaveFile
 
-# Verdana is good font
+###Verdana is good font###
 LARGE_FONT = ("Verdana",12)
 
-#set matplotlib style
+###set matplotlib style###
 style.use('ggplot')
+
+
 
 ###
 # Lists to hold Data
@@ -96,7 +103,7 @@ packetsDropped = [0]
 
 save_file=None
 
-data = [missionTime, packetCount,altitude,pressure,
+data = [teamID,missionTime, packetCount,altitude,pressure,
         temp,voltage,GPSTime,GPSLat,GPSLong,GPSAlt,
         GPSSats,tiltX,tiltY,tiltZ,softwareState]
 #
@@ -107,8 +114,11 @@ data = [missionTime, packetCount,altitude,pressure,
 
 class Window(Frame):
     '''
-    Tkinter window that serves as the main
-    UI for the program. 
+    # Window
+    #
+    # @Inherets Tkinter Frame class
+    #
+    # This is the main object that represents the GCS  
     '''
     def __init__(self, *args, **kwargs):
         super().__init__()
@@ -116,29 +126,55 @@ class Window(Frame):
         self.width = self.winfo_reqwidth()
         self.height = self.winfo_reqheight()
 
+    #Upper Lebel method which calls all init functions for the window
     def initUI(self):
         self.master.title('BombShell Ground Station Terminal v0.0001')  #Window Title
                                                           
-        self.createGraphs()                                             
-        self.createSideBar()
-        self.createFooter()
-        self.update()
-        self.bind('<Configure>',self.on_resize)
+        self.createGraphs()         #Creates all graphs within a Notebook context                                   
+        self.createSideBar()        #Creates a permanent side-bar to display some data
+        self.createFooter()         #Same but for a footer
+        self.update()               
+        self.bind('<Configure>',self.on_resize) #This adds an interrupt to react to resizing
 
-    
+
+    #Creates all graphs within a Notebook context  
     def createGraphs(self):
-        self.plots = customWidgets.Plotting_Widget()
 
-        canvas = FigureCanvasTkAgg(self.plots.f,self)
-        canvas.show()
-       
-        canvas.get_tk_widget().pack()
-       
-        self.canvas=canvas
-        self.anim = animation.FuncAnimation(self.plots.f, self.update,interval=2000)
+        #Notebook to hold tab frames
+        self.nb = Notebook(self)
+
+        #Frame to hold the MatplotLib plotting widgets
+        page1 = Frame(self.nb,width = 300, height = self.winfo_reqwidth() - 20)
+        page2 = Frame(self.nb,width = 300, height = self.winfo_reqwidth() - 20)
+
+        #Each plotting widget with MatplotLib
+        self.plots1 = customWidgets.Plotting_Widget()
+        self.plots2 = customWidgets.Plotting_Widget_2()
+
+        #Adds each plot to a canvas to draw, then it shows them
+        canvas1 = FigureCanvasTkAgg(self.plots1.f,page1)
+        canvas2 = FigureCanvasTkAgg(self.plots2.f,page2)
+        canvas1.show()
+        canvas2.show()
+
+        #packs the canvases
+        canvas1.get_tk_widget().pack()
+        canvas2.get_tk_widget().pack()
+
+        #adds the pages to the notebook context
+        self.nb.add(page1,text='Main Telemetry')
+        self.nb.add(page2,text='Other Telemetry')
+        
+        #Animates the Graphs
+        self.anim1 = animation.FuncAnimation(self.plots1.f, self.update,interval=1000)
+        self.anim2 = animation.FuncAnimation(self.plots2.f,self.update,interval=3500)
+
+        self.canvas1 = canvas1
+        self.canvas2 = canvas2
         
 
     def createSideBar(self):
+        
         load = Image.open('bombshell1.png').resize((210,210))
         render = ImageTk.PhotoImage(load)
 
@@ -174,7 +210,8 @@ class Window(Frame):
     def update(self,i=None):
        # xbee.rx(data)
         
-        self.plots.update(data) #Calls the custom plots widget to update itself and redraw the plots
+        self.plots1.update(data) #Calls the custom plots widget to update itself and redraw the plots
+        self.plots2.update(data)
         #print("all clear")
         
         sidebar_text = "Mission Time: " + str(GPSTime[-1]) +\
@@ -207,7 +244,9 @@ class Window(Frame):
         ### .pack() should onnly be used to ensure the outer-frame is ready to be drawn to
         self.footer.place(y=self.winfo_height(),x=0,anchor=tk.SW)    #Places the bottom of the footer at the bottom-left of the screen
         self.side_bar.place(x=self.winfo_width(),y=20,anchor=tk.NE)   #Places the the sidebar in the top-right corner of the scren
-        self.canvas._tkcanvas.place(x=0,y=0)                         #Places graphs in top left
+        self.canvas1._tkcanvas.place(x=0,y=20)                         #Places graphs in top left
+        self.canvas2._tkcanvas.place(x=0,y=20)                         #Places graphs in top left                                            
+        self.nb.place(x=0,y=0)
        
         height = self.winfo_height()
         for b in self.overrideButtons:
@@ -257,7 +296,7 @@ def init():
     variables.
     '''
     global ser,xbee,root,app,save_file
-    xbee = Comms('COM5',data)
+    xbee = Comms('COM3',data)
 
     try:
         save_file = open('telemetry.csv','w',newline='')
