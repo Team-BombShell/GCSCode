@@ -1,6 +1,7 @@
 import matplotlib
 from matplotlib.backends import backend_tkagg
 from matplotlib.figure import Figure
+import numpy as np
 matplotlib.use("TkAgg")
 
 
@@ -12,11 +13,16 @@ class Plotting_Widget:
     def __init__(self):
 
         #Creates Figure and subplot
-        f = Figure(figsize=(11,10),dpi=70)
+        f = Figure(figsize=(15,10),dpi=76)
+        #ax = f.gca()
+       # ax.set_autoscale_on(False)
+        
         self.altitude_plot=f.add_subplot(221)
         self.pressure_plot=f.add_subplot(222)
         self.temp_plot=f.add_subplot(223)
         self.tiltZ_plot=f.add_subplot(224)
+
+        self.altitude_plot.set_autoscale_on(False)
         
         #List of plots to make code more readable
         self.plots = [self.altitude_plot,self.pressure_plot,
@@ -34,12 +40,19 @@ class Plotting_Widget:
        
         
         self.clear_and_label_plots()
+        if(len(data[1]) >= 10):
+            for d in data:
+                d.pop(0)
+                
         #print(data[7])
         #Plots time vs. each peice of data
-        self.altitude_plot.plot(data[1],data[3])
-        self.pressure_plot.plot(data[1],data[4])
-        self.temp_plot.plot(data[1],data[5])
-        self.tiltZ_plot.plot(data[1],data[14])
+        x = np.array(data[1])
+        self.altitude_plot.autoscale(enable=True, axis=u'both', tight=True)
+        self.pressure_plot.autoscale(enable=True, axis=u'both', tight=False)
+        self.altitude_plot.plot(x,np.array(data[3]))
+        self.pressure_plot.plot(x,np.array(data[4]))
+        self.temp_plot.plot(x,np.array(data[5]))
+        self.tiltZ_plot.plot(x,np.array(data[14]))
         
 
 
@@ -52,7 +65,8 @@ class Plotting_Widget:
         for plot in self.plots:
             plot.clear()
         
-
+       # self.altitude_plot.set_xlim((0,100))
+        #self.altitude_plot.set_ylim((0,1000))
         self.altitude_plot.set_title('Altitude')
         self.altitude_plot.set_xlabel('Time (s)')
         self.altitude_plot.set_ylabel('meters')
@@ -75,7 +89,7 @@ class Plotting_Widget_2:
     def __init__(self):
 
         #Creates Figure and subplot
-        f = Figure(figsize=(11,10),dpi=70)
+        f = Figure(figsize=(15,10),dpi=76)
         self.voltage_plot=f.add_subplot(221)
         self.GPS_plot=f.add_subplot(222)
         self.tiltx_plot=f.add_subplot(223)
@@ -97,12 +111,15 @@ class Plotting_Widget_2:
        
         
         self.clear_and_label_plots()
-        #print(data[7])
-        #Plots time vs. each peice of data
-        self.voltage_plot.plot(data[1],data[6])
-        self.GPS_plot.plot(data[1],data[10])
-        self.tiltx_plot.plot(data[1],data[12])
-        self.state_plot.plot(data[1],data[15])
+
+        if(len(data[1]) >= 50):
+            for d in data:
+                d.pop(0)
+        x = np.array(data[1])      
+        self.voltage_plot.plot(x,np.array(data[6]))
+        self.GPS_plot.plot(x,np.array(data[10]))
+        self.tiltx_plot.plot(x,np.array(data[12]))
+        self.state_plot.plot(x,np.array(data[15]))
         
 
 

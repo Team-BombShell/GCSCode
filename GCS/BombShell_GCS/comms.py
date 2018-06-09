@@ -2,12 +2,15 @@ from serial.serialutil import SerialException
 import serial
 import threading
 import warnings
+import queue
+import math
 
 
 class Comms:
     def __init__(self,ser_path,data,raw_data,baud_rate=9600):
         
         try:
+            self.rowan = queue.Queue()
             self.connected=False
             self.temp_data_array = ''
             self.data = data
@@ -27,8 +30,15 @@ class Comms:
                         self.temp_data_array += data
                     else:
                         self.temp_data_array = self.temp_data_array.split(',')
-                        for i in range(len(self.temp_data_array)):
-                            self.data[i].append(self.temp_data_array[i])
+                        length = len(self.temp_data_array)
+                        if(length == 16):
+                            for i in range(length):
+                                if (i == 14):
+                                    pythag = math.sqrt(self.data[12]**2 + self.data[13]**2)
+                                    self.data[i].append(pythag)
+                                    print(pythag)
+                                else:
+                                    self.data[i].append(self.temp_data_array[i])
                         self.temp_data_array = ''
                         self.connected = False
                        # print(self.data)
@@ -36,24 +46,26 @@ class Comms:
             def read_from_port(serial,connected):
                 while True:
                     #print('a')
-
+                    if(not self.rowan.empty()):
+                        serial.write(self.rowan.get())
                     reading = serial.read()
-                    self.raw_file.write(str(reading))
-                    self.raw_file.flush()
-                    
-                    #try:
-                    reading = reading.decode(encoding='mbcs')
+                    if(len(reading) > 0):
+                        self.raw_file.write(reading.decode(encoding='mbcs'))
+                        self.raw_file.flush()
                     
                     
-                    if self.temp_data_array == '' and reading == '$':
-                        self.connected = True
+                        reading = reading.decode(encoding='mbcs')
                     
+                    
+                        if self.temp_data_array == '' and reading == '$':
+                            self.connected = True
+                        
 
-                    if self.connected:
-                       # print(reading)
-                        receive_data(reading)
-                    
-                          
+                        if self.connected:
+                           # print(reading)
+                            receive_data(reading)
+                        
+                              
                     
             
             self.thread = threading.Thread(target=read_from_port,args=(self.ser,self.connected))
@@ -67,7 +79,8 @@ class Comms:
             
 
     def tx(self,data):
-        self.ser.write(data.encode())
+        self.rowan.put(data.encode())
     def halt(self):
-        self.thread.join()
-        self.ser.close()
+        #self.thread.join()
+        #self.ser.close()
+        pass

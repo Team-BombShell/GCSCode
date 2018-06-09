@@ -51,6 +51,8 @@ NOTE: The XBee MUST have API mode activated through the XCTU app before this pro
 
 ''''''
 ######
+import pyqtgraph
+
 import tkinter as tk                #GUI Modules
 from tkinter import Tk, BOTH,BOTTOM,TOP,RIGHT,LEFT
 from tkinter.ttk import Frame,Button,Label,Menubutton,Notebook
@@ -146,8 +148,8 @@ class Window(Frame):
         self.nb = Notebook(self)
 
         #Frame to hold the MatplotLib plotting widgets
-        page1 = Frame(self.nb,width = 300, height = self.winfo_reqwidth() - 20)
-        page2 = Frame(self.nb,width = 300, height = self.winfo_reqwidth() - 20)
+        page1 = Frame(self.nb,width = 300, height = self.winfo_reqwidth())
+        page2 = Frame(self.nb,width = 300, height = self.winfo_reqwidth())
 
         #Each plotting widget with MatplotLib
         self.plots1 = customWidgets.Plotting_Widget()
@@ -190,14 +192,14 @@ class Window(Frame):
         O_DepParachute= Button(self,text='Deploy Parachute', command=DepParachuteCallback)
         O_BuzzOn = Button(self,text='Buzzer ON', command=BuzzOn)
         O_BuzzOff = Button(self,text='Buzzer OFF',command=BuzzOff)
-        O_CameraOn = Button(self,text='Camera Record',command=CameraOn)
+        O_Calibrate = Button(self,text='Calibrate Gyro',command=Calibrate)
         
-        self.overrideButtons = [O_RESET,O_FS0,O_FS1,O_FS2,O_FS3,O_DepHS,O_DetHS,O_DepParachute,O_BuzzOn,O_BuzzOff,O_CameraOn]
+        self.overrideButtons = [O_RESET,O_FS0,O_FS1,O_FS2,O_FS3,O_DepHS,O_DetHS,O_DepParachute,O_BuzzOn,O_BuzzOff,O_Calibrate]
         
         
         
         self.side_bar = Label(self,image=render,text=' ',compound=tk.BOTTOM,
-                              font=LARGE_FONT,anchor=tk.NE,justify=tk.RIGHT,width=50,relief=tk.RIDGE)
+                              font=LARGE_FONT,anchor=tk.NE,justify=tk.RIGHT,relief=tk.RIDGE)
         self.side_bar.image=render
 
         
@@ -216,17 +218,17 @@ class Window(Frame):
         self.plots2.update(data)
         #print("all clear")
         
-        sidebar_text = "Mission Time: " + str(GPSTime[-1]) +\
-                       "\nFlight State: " + str(softwareState[-1]) +\
-                       "\n\nVerticle Tilt: " + str(tiltZ[-1]) +\
-                       "\nAltitude: " + str(altitude[-1]) +\
-                       "\nPressure: " + str(pressure[-1]) + \
-                       "\nTemperature: " + str(temp[-1]) +\
-                       "\n\nVoltage: " + str(voltage[-1]) #+\
+        sidebar_text = "Mission Time: " + str(data[1][-1]) +\
+                       "\nFlight State: " + str(data[15][-1]) +\
+                       "\n\nVerticle Tilt: " + str(data[14][-1]) +\
+                       "\nAltitude: " + str(data[3][-1]) +\
+                       "\nPressure: " + str(data[4][-1]) + \
+                       "\nTemperature: " + str(data[5][-1]) +\
+                       "\n\nVoltage: " + str(data[6][-1]) #+\
                        #"\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
 
         footer_text = 'Team ID: ' + str(teamID[-1]) +\
-                      "\tPacket Count: " + str(packetCount[-1]) + \
+                      "\tPacket Count: " + str(data[2][-1]) + \
                       "\tPacket Rate: " + str(packetReceivedRate[-1]) +\
                       "\tPackets Dropped: " + str(packetsDropped[-1]) +\
                       "                                             " +\
@@ -245,15 +247,15 @@ class Window(Frame):
         ###This originally used .pack(), but .pack() does weird things sometimes.
         ### .pack() should onnly be used to ensure the outer-frame is ready to be drawn to
         self.footer.place(y=self.winfo_height(),x=0,anchor=tk.SW)    #Places the bottom of the footer at the bottom-left of the screen
-        self.side_bar.place(x=self.winfo_width(),y=20,anchor=tk.NE)   #Places the the sidebar in the top-right corner of the scren
-        self.canvas1._tkcanvas.place(x=0,y=20)                         #Places graphs in top left
-        self.canvas2._tkcanvas.place(x=0,y=20)                         #Places graphs in top left                                            
+        self.side_bar.place(x=self.winfo_width(),y=self.winfo_height()-20,anchor=tk.SE)   #Places the the sidebar in the top-right corner of the scren
+        self.canvas1._tkcanvas.place(x=0,y=0)                         #Places graphs in top left
+        self.canvas2._tkcanvas.place(x=0,y=0)                         #Places graphs in top left                                            
         self.nb.place(x=0,y=0)
        
-        height = self.winfo_height()
+        height = 20
         for b in self.overrideButtons:
-            b.place(x=self.winfo_width()-150,y=height-25,anchor=tk.SW)
-            height -=30
+            b.place(x=self.winfo_width()-200,y=height,anchor=tk.NW)
+            height +=30
         
         self.save(data)
 
@@ -298,7 +300,7 @@ def init():
         
         saver= csv.writer(save_file, delimiter=",",
                           quotechar='|', quoting=csv.QUOTE_MINIMAL,escapechar='\\')
-        row = ['missionTime', 'packetCount','altitude','pressure',
+        row = ['Team ID', 'missionTime', 'packetCount','altitude','pressure',
                'temp','voltage','GPSTime','GPSLat','GPSLong','GPSAlt',
                'GPSSats','tiltX','tiltY','tiltZ','softwareState']
         saver.writerow(row)
@@ -360,9 +362,10 @@ def BuzzOn():
 def BuzzOff():
     xbee.tx(')')
     print('!')
-def CameraOn():
+def Calibrate():
     xbee.tx('_')
     print('!')
+    
 
 '''
 When this program is executed
